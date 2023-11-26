@@ -6,7 +6,8 @@
         {
             "label": "BuildRun",
             "type": "shell",
-            "command": "litac -pkg-build -run",
+            "command": "litac",
+            "args": ["-pkg-build", "-run"],
             "presentation": {
                 "echo": true,
                 "reveal": "always",
@@ -14,6 +15,30 @@
                 "panel": "shared",
                 "showReuseMessage": false,
                 "clear": true
+            },
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "BuildTest",
+            "type": "shell",
+            "command": "litac",
+            "args": ["-pkg-build", "-test", "\".*\"", "-run"],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
             }
         }
     ]

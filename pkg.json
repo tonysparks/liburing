@@ -1,9 +1,9 @@
 
 {
-    "name" : "libio_uring",
+    "name" : "liburing",
     "version" : "0.0.1",
     "type" : "library",
-    "repo" : "",
+    "repo" : "https://github.com/tonysparks/liburing",
 
     "build_command" : {
         "default" : {

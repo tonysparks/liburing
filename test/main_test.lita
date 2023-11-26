@@ -1,9 +1,18 @@
 
 import "main"
 import "std/assert"
+import "liburing"
 
-@test("project_test")
+const QUEUE_DEPTH = 4
+
+@test("test io_uring is available")
 func test() {
-    assert(true)
-}
+    var ring: io_uring;
+    var result = io_uring_queue_init(QUEUE_DEPTH, &ring, 0);
+    defer io_uring_queue_exit(&ring)
 
+    // var sqe = io_uring_get_sqe(ring)
+    // io_uring_prep_read(sqe, handle, fileInfo.iovecs, blocks, 0)
+    // io_uring_sqe_set_data(sqe, fileInfo)
+    // io_uring_submit(ring)
+}
