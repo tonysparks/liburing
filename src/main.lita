@@ -6,13 +6,11 @@ import "liburing"
 
 @include("<sys/stat.h>", "<fcntl.h>");
 
-@foreign
-func posix_memalign(memptr: **void, alignment: usize, size: usize) : i32;
-
 const QUEUE_DEPTH = 4
 const BLOCK_SIZE = 1024
 
 struct FileInfo {
+    file: File
     fileSize: usize
     iovecs: []iovec
 }
@@ -33,65 +31,61 @@ func main(len: i32, args: **char) : i32 {
             return 1;
         }
 
-        result = getCompletionAndPrint(&ring)
+        result = waitAndWrite(&ring)
         if(result != 0) {
             fprintf(stderr, "Error outputing file: %s\n", args[i])
             return 1
         }
     }
 
-
-
     io_uring_queue_exit(&ring)
     return 0
 }
 
-func getCompletionAndPrint(ring: *io_uring) : i32 {
+func waitAndWrite(ring: *io_uring) : i32 {
     var cqe: *io_uring_cqe;
-    var result = io_uring_wait_cqe(ring, &cqe)
-    if(result < 0) {
-        perror("io_uring_wait_cqe")
-        return 1;
-    }
 
-    if(cqe.res < 0) {
-        fprintf(stderr, "Async readv failed.\n")
-        return 1;
+    // wait for the read requests to complete
+    if(cqeWait(ring, &cqe)) {
+        return 1
     }
 
     var fileInfo = io_uring_cqe_get_data(cqe) as (*FileInfo)
+    defer fileInfo.file.close()
+
     var blocks = (fileInfo.fileSize / BLOCK_SIZE) as (i32)
     if(fileInfo.fileSize % BLOCK_SIZE) blocks += 1
 
+    // mark the read requests completeed
     io_uring_cqe_seen(ring, cqe)
 
+    // now submit the write requests to stdout
     var fd = fileno(stdout)
     var sqe = io_uring_get_sqe(ring)
     io_uring_prep_writev(sqe, fd, fileInfo.iovecs, blocks, 0)
     io_uring_sqe_set_data(sqe, fileInfo)
     io_uring_submit(ring)
 
-/*
-    for(var i = 0; i < blocks; i+=1) {
-        fprintf(stdout, "%.*s",
-            fileInfo.iovecs[i].iov_len as (i32),
-            fileInfo.iovecs[i].iov_base as (*char)
-        )
+    // wait for the write requests to complete
+    if(cqeWait(ring, &cqe)) {
+        return 1
     }
-*/
 
-    result = io_uring_wait_cqe(ring, &cqe)
+    io_uring_cqe_seen(ring, cqe)
+    return 0
+}
+
+func cqeWait(ring: *io_uring, cqe: **io_uring_cqe) : i32 {
+    var result = io_uring_wait_cqe(ring, cqe)
     if(result < 0) {
         perror("io_uring_wait_cqe")
         return 1;
     }
 
-    if(cqe.res < 0) {
+    if((*cqe).res < 0) {
         fprintf(stderr, "Async readv failed.\n")
         return 1;
     }
-
-    io_uring_cqe_seen(ring, cqe)
     return 0
 }
 
@@ -129,20 +123,13 @@ func submitReadRequest(
     }
 
     fileInfo.fileSize = fileSize
+    fileInfo.file = file
 
+    // make the read request for each block(iovec) of the file
     var sqe = io_uring_get_sqe(ring)
     io_uring_prep_readv(sqe, handle, fileInfo.iovecs, blocks, 0)
     io_uring_sqe_set_data(sqe, fileInfo)
     io_uring_submit(ring)
 
     return 0
-}
-
-func output(buf: *char, len: usize) {
-    /*while(len) {
-        fputc(*buf, stdout)
-        buf += 1
-        len -= 1
-    }*/
-    fprintf(stdout, "%.*s", len as (i32), buf)
 }
