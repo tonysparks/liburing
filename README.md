@@ -10,7 +10,7 @@ To import `liburing` include the following dependency in your `pkg.json` `depend
 ```json
 {
     "name" : "liburing",
-    "version" : "0.0.1",
+    "version" : "v0.0.2",
     "repo": "https://github.com/tonysparks/liburing"
 }
 ```
