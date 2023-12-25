@@ -10,6 +10,8 @@ typedef struct io_uring io_uring;
 typedef struct io_uring_sqe io_uring_sqe;
 typedef struct io_uring_cqe io_uring_cqe;
 
+typedef struct io_uring_params io_uring_params;
+
 typedef struct iovec iovec;
 """);
 
@@ -33,7 +35,15 @@ public struct io_uring_cqe {
 public struct io_uring_probe;
 
 @foreign
-public struct io_uring_params;
+public struct io_uring_params {
+    sq_entries: u32
+    cq_entries: u32
+    flags: u32
+    sq_thread_cpu: u32
+    sq_thread_idle: u32
+    features: u32
+    resv: [4]u32
+}
 
 @foreign
 public struct io_uring_restriction;
