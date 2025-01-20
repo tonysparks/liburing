@@ -241,8 +241,25 @@ public func io_uring_cqe_seen(p0: *io_uring, p1: *io_uring_cqe) : void;
 @foreign
 public func io_uring_sqe_set_data(p0: *io_uring_sqe, p1: *void) : void;
 
+// Not available in default version of liburing
+// @foreign
+// public func io_uring_sqe_set_data64(p0: *io_uring_sqe, data: u64) : void;
+
+public func io_uring_sqe_set_data64(p0: *io_uring_sqe, data: u64) : void {
+    io_uring_sqe_set_data(p0, data as (*void))
+}
+
 @foreign
 public func io_uring_cqe_get_data(p0: *const io_uring_cqe) : *void;
+
+// Not available in default version of liburing
+// @foreign
+// public func io_uring_cqe_get_data64(p0: *const io_uring_cqe) : u64;
+
+public func io_uring_cqe_get_data64(p0: *const io_uring_cqe) : u64 {
+    var value = io_uring_cqe_get_data(p0)
+    return value as (u64)
+}
 
 @foreign
 public func io_uring_sqe_set_flags(p0: *io_uring_sqe, p1: u32) : void;
