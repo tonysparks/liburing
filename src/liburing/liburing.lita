@@ -46,6 +46,7 @@ public struct io_uring_params {
     sq_thread_cpu: u32
     sq_thread_idle: u32
     features: u32
+    wq_fd: i32
     resv: [4]u32
 }
 
@@ -328,10 +329,25 @@ public func io_uring_prep_timeout_update(p0: *io_uring_sqe, p1: *__kernel_timesp
 public func io_uring_prep_accept(p0: *io_uring_sqe, p1: i32, p2: *sockaddr, p3: *socklen_t, p4: i32) : void;
 
 @foreign
+public func io_uring_prep_multishot_accept(p0: *io_uring_sqe, p1: i32, p2: *sockaddr, p3: *socklen_t, p4: i32) : void;
+
+@foreign
 public func io_uring_prep_accept_direct(p0: *io_uring_sqe, p1: i32, p2: *sockaddr, p3: *socklen_t, p4: i32, p5: u32) : void;
 
 @foreign
 public func io_uring_prep_link_timeout(p0: *io_uring_sqe, p1: *__kernel_timespec, p2: u32) : void;
+
+@foreign
+public func io_uring_prep_msg_ring_cqe_flags(sqe: *io_uring_sqe, fd: i32, len: u32, data: u64, flags: u32, cqe_flags: u32) : void;
+
+@foreign
+public func io_uring_prep_msg_ring(sqe: *io_uring_sqe, fd: i32, len: u32, data: u64, flags: u32) : void;
+
+@foreign
+public func io_uring_prep_msg_ring_fd(sqe: *io_uring_sqe, fd: i32, source_fd: i32, target_fd: i32, data: u64, flags: u32) : void;
+
+@foreign
+public func io_uring_prep_msg_ring_fd_alloc(sqe: *io_uring_sqe, fd: i32, source_fd: i32, data: u64, flags: u32) : void;
 
 @foreign
 public func io_uring_prep_connect(p0: *io_uring_sqe, p1: i32, p2: *const sockaddr, p3: socklen_t) : void;
@@ -469,9 +485,15 @@ public func io_uring_mlock_size_params(p0: u32, p1: *io_uring_params) : usize;
 @foreign public const IOSQE_IO_LINK:u8;
 @foreign public const IOSQE_IO_HARDLINK:u8;
 @foreign public const IOSQE_FIXED_FILE:u8;
-
+@foreign public const IOSQE_CQE_SKIP_SUCCESS:u8;
 @foreign public const IORING_SQ_NEED_WAKEUP: u8;
 
+@foreign public const IORING_SETUP_SINGLE_ISSUER: u8;
+@foreign public const IORING_SETUP_COOP_TASKRUN: u8;
+@foreign public const IORING_SETUP_DEFER_TASKRUN: u8;
+@foreign public const IORING_SETUP_ATTACH_WQ: u8;
+@foreign public const IORING_SETUP_SUBMIT_ALL: u8;
 @foreign public const IORING_SETUP_SQPOLL: u32;
+
 @foreign public const IORING_FEAT_NODROP: u32;
 @foreign public const IORING_TIMEOUT_ETIME_SUCCESS: u32;

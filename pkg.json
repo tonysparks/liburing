@@ -1,7 +1,7 @@
 
 {
     "name" : "liburing",
-    "version" : "v0.0.2",
+    "version" : "v0.0.4",
     "type" : "library",
     "repo" : "https://github.com/tonysparks/liburing",
 
